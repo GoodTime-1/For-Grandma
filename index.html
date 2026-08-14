@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สุขสันต์วันเกิดคุณย่า</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Mali', cursive;
+            background: #d4efff; /* ปรับสีพื้นหลังให้ตรงกับภาพ */
+            overflow-x: hidden;
+            min-height: 100vh;
+            color: #1e3a8a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* เอฟเฟกต์ฟองสบู่ */
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: floatUp linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            10% { opacity: 0.6; } /* ลด opacity ของฟองสบู่ลงนิดหน่อย */
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+
+        /* แอนิเมชันซองจดหมาย - ปรับเป็น Flat Design */
+        .envelope-container {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+            position: relative;
+        }
+        .envelope-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .envelope {
+            position: relative;
+            width: 260px;
+            height: 160px;
+            background-color: #fde047; /* สีพื้นหลังซอง (ด้านใน) */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            border-radius: 4px;
+        }
+
+        /* กระดาษจดหมาย (อยู่ล่างสุด) */
+        .letter-paper {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            right: 10px;
+            bottom: 5px;
+            background-color: white;
+            z-index: 1;
+            border-radius: 2px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transition: transform 0.6s ease;
+        }
+
+        /* ปีกซ้ายขวา */
+        .envelope-flaps {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2;
+        }
+        .envelope-flaps::before { /* ปีกซ้าย */
+            content: ''; position: absolute; top: 0; left: 0;
+            border-left: 130px solid #fef08a;
+            border-top: 80px solid transparent; border-bottom: 80px solid transparent;
+        }
+        .envelope-flaps::after { /* ปีกขวา */
+            content: ''; position: absolute; top: 0; right: 0;
+            border-right: 130px solid #fef08a;
+            border-top: 80px solid transparent; border-bottom: 80px solid transparent;
+        }
+
+        /* ปีกบน */
+        .envelope-top {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 4;
+            transform-origin: top;
+            transition: transform 0.5s ease, z-index 0.5s;
+        }
+        .envelope-top::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            border-top: 85px solid #facc15; /* สีเข้มขึ้นนิดนึงให้มีมิติ */
+            border-left: 130px solid transparent; border-right: 130px solid transparent;
+        }
+
+        /* ปีกล่าง */
+        .envelope-bottom {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 100%;
+            z-index: 3;
+        }
+        .envelope-bottom::after {
+            content: ''; position: absolute; bottom: 0; left: 0;
+            border-bottom: 85px solid #fde047;
+            border-left: 130px solid transparent; border-right: 130px solid transparent;
+        }
+
+        .envelope-container.opened .envelope-top {
+            transform: rotateX(180deg);
+            z-index: 0; /* ย้ายไปอยู่หลังกระดาษ */
+        }
+        .envelope-container.opened .letter-paper {
+            transform: translateY(-80px);
+        }
+
+        /* สติ๊กเกอร์หัวใจหรือรอยปิดผนึก */
+        .heart-seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ef4444; /* สีแดง */
+            font-size: 1.5rem;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); /* เพิ่มเงาให้หัวใจนิดหน่อย */
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 65px 100px 0 100px;
+            border-color: #fde047 transparent transparent transparent; /* ฝาบน */
+            z-index: 3;
+            transform-origin: top;
+            transition: transform 0.4s ease-in-out;
+        }
+        
+        .envelope-container.opened .envelope::before {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 100px 75px 100px;
+            border-color: transparent transparent #fde047 transparent; /* สามเหลี่ยมล่าง */
+            z-index: 2;
+        }
+
+        .envelope-left-right {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .envelope-left-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 65px 0 65px 100px;
+            border-color: transparent transparent transparent #fef08a; /* ซ้าย */
+        }
+        
+        .envelope-left-right::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 65px 100px 65px 0;
+            border-color: transparent #fef08a transparent transparent; /* ขวา */
+        }
+
+        .letter-paper {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            background-color: white;
+            z-index: 1;
+            border-radius: 4px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+            transition: all 0.5s ease;
+        }
+        
+        .envelope-container.opened .letter-paper {
+            transform: translateY(-80px);
+            opacity: 0;
+        }
+
+        .letter-content {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* ปรับเงาให้นุ่มขึ้น */
+            border: 1px solid #e5e7eb; /* เพิ่มขอบบางๆ สีเทา */
+            position: relative; /* ให้ z-index ทำงาน */
+            z-index: 20;
+        }
+        .letter-content.show {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            display: block;
+        }
+
+        /* Typing Effect */
+        .typing-text {
+            display: inline;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            background-color: #4b5563;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .hidden-text {
+            display: none;
+        }
+
+        /* สไตล์หน้าแรก หน้าคั่น และหน้าที่สอง */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            display: none; /* เริ่มต้นซ่อนไว้ทั้งหมด ป้องกันการซ้อนทับ */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            z-index: 1;
+        }
+        
+        .page.active-display {
+            display: flex; /* แสดง element ใน DOM */
+        }
+
+        .page.active-opacity {
+            opacity: 1; /* แสดงผล (fade in) */
+            z-index: 10;
+        }
+        
+        #transition-page {
+            padding: 2rem;
+            text-align: center;
+            background-color: transparent;
+        }
+
+        .transition-text {
+            color: #1e3a8a; /* ปรับสีน้ำเงินให้เข้มและอ่านง่าย */
+            font-size: 1.5rem;
+            line-height: 1.8;
+            font-weight: 600;
+            max-width: 800px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        #page2 {
+            justify-content: flex-end; /* ให้เค้กอยู่ข้างล่าง */
+            padding-bottom: 2rem;
+        }
+        
+        #page2.active {
+            opacity: 1;
+            pointer-events: auto;
+            display: flex;
+        }
+
+        /* แอนิเมชันเค้กขยับ */
+        .cake-container {
+            cursor: pointer;
+            transition: transform 0.1s;
+            z-index: 20;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+        }
+        .cake-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-2deg); }
+            20%, 80% { transform: translate3d(2px, 0, 0) rotate(2deg); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(-4deg); }
+            40%, 60% { transform: translate3d(4px, 0, 0) rotate(4deg); }
+        }
+
+        /* สไตล์แกลเลอรีรูปภาพ */
+        .photo-gallery {
+            position: absolute;
+            top: 10%;
+            width: 90%;
+            max-width: 600px;
+            height: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+            pointer-events: none; /* ป้องกันการคลิกรูปแทนเค้ก */
+        }
+
+        .polaroid {
+            position: absolute;
+            background: white;
+            padding: 10px 10px 30px 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: scale(0.5) translateY(100px);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 100%;
+            max-width: 100%;
+        }
+        
+        .polaroid img {
+            max-width: 100%;
+            max-height: 40vh; /* จำกัดความสูงรูปบนมือถือ */
+            object-fit: cover;
+            border: 1px solid #e5e7eb;
+        }
+
+        .polaroid.show {
+            opacity: 1;
+        }
+
+        /* ปรับปุ่มให้เหมือนในรูป */
+        .btn-next {
+            background-color: #5a9df8;
+            color: white;
+            padding: 0.6rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(90, 157, 248, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            border: none;
+            opacity: 0; /* ซ่อนไว้ก่อนรอพิมพ์จบ */
+            transition: opacity 0.5s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-next.show {
+            opacity: 1;
+            pointer-events: auto; /* เปิดให้กดได้ */
+        }
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(90, 157, 248, 0.4);
+            background-color: #4b8eee;
+        }
+
+        /* ปรับแต่งส่วนหัว */
+        h1.title-header {
+            color: #264b96;
+            font-size: 3.5rem; /* ปรับขนาดให้ใหญ่ขึ้น */
+            font-weight: 700;
+            text-shadow: 1px 1px 0px #fff, -1px -1px 0px #fff, 1px -1px 0px #fff, -1px 1px 0px #fff; /* เพิ่มขอบสีขาวเล็กๆ ให้เด่น */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 3rem; /* เพิ่มระยะห่างด้านล่าง */
+        }
+        .title-heart {
+            color: #e41e1e;
+            font-size: 3rem;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+            -webkit-text-stroke: 2px #000;
+        }
+
+        /* ปรับข้อความในจดหมาย */
+        .letter-inner-text {
+            color: #4b5563; /* สีเทาเข้มๆ ตามรูป */
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .letter-title {
+            color: #264b96;
+            font-size: 1.6rem; /* ลดขนาดลงนิดหน่อย */
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .letter-quote-en {
+            color: #264b96;
+            font-weight: 700;
+            font-style: italic;
+            font-size: 1rem; /* เล็กลงนิดหน่อย */
+            margin-top: 1rem;
+        }
+        
+        .letter-quote-th {
+            color: #6b7280; /* สีเทา */
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        hr.custom-hr {
+            border: none;
+            border-top: 1px solid #d1d5db; /* สีเส้นบางๆ */
+            margin: 1.5rem auto; /* จัดกึ่งกลาง */
+            width: 80%;
+            height: 1px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="bubble-container" class="fixed inset-0 pointer-events-none z-0"></div>
+    
+    <!-- เพิ่ม Audio Element สำหรับเพลง -->
+    <audio id="bg-music" loop>
+        <source src="song.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div id="page1" class="page px-4 w-full active-display active-opacity">
+        <h1 class="title-header">สำหรับคุณย่า <span class="title-heart">❤️</span></h1>
+        
+        <div class="envelope-container" id="envelope-wrapper" onclick="openLetter()">
+            <div class="envelope">
+                <div class="letter-paper"></div>
+                <div class="envelope-flaps"></div>
+                <div class="envelope-bottom"></div>
+                <div class="envelope-top"></div>
+                <div class="heart-seal" id="heart-seal"><i class="fas fa-heart"></i></div>
+            </div>
+            <p class="text-center mt-6 text-[#3b82f6] font-bold text-lg animate-pulse" id="click-hint">กดเพื่อเปิดจดหมาย</p>
+        </div>
+
+        <!-- เนื้อหาจดหมาย -->
+        <div class="letter-content p-10 max-w-2xl w-full mx-auto text-center" id="letter">
+            <!-- ซ่อนข้อความจริงไว้เพื่อนำมาทำ Typing effect -->
+            <div id="raw-text" class="hidden-text">
+                <div class="title">“คุณย่าที่แสนดีของหนู”</div>
+                <div class="p1">สุขสันต์วันเกิดนะครับย่า สำหรับพวกหนูแล้ว วันแม่ของพวกหนูคือวันที่ 15 สิงหาคม ของทุกปี ไอเฟล ฟลอเรนซ์ หม่ามี๊ และปะป๊า ขอให้ย่ามีสุขภาพที่ดี อยู่กับพวกหนูไปนานๆ หนูขอให้ย่ามีความสุขและรักพวกหนูที่สุดแบบนี้ตลอดไป พวกหนูรักย่าที่สุดในโลกเลย</div>
+                <div class="hr"></div>
+                <div class="q-en">“There will never be another you, Grandma.”</div>
+                <div class="q-th">ไม่มีคุณย่าคนไหนในโลกนี้ที่จะเหมือนย่าของหนูได้อีกแล้ว</div>
+            </div>
+
+            <!-- ส่วนที่จะแสดงผลจริงด้วย JS -->
+            <h2 class="letter-title" id="type-title"></h2>
+            <p class="letter-inner-text" id="type-p1"></p>
+            <div id="type-hr-container"></div>
+            <p class="letter-quote-en" id="type-q-en"></p>
+            <p class="letter-quote-th" id="type-q-th"></p>
+            
+            <button class="btn-next mx-auto block pointer-events-none" id="btn-next" onclick="goToPage2()">
+                มีเซอร์ไพรส์อีกนะ กดเลย! <i class="fas fa-arrow-right ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- หน้าคั่นแสดงข้อความขอบคุณ -->
+    <div id="transition-page" class="page px-4 w-full">
+        <p class="transition-text" id="transition-type-text"></p>
+        <div id="transition-raw-text" class="hidden-text">
+            ขอบคุณสำหรับความรักทั้งหมดที่ย่าให้พวกเรามากมายจนไม่รู้ว่าทั้งชีวิตนี้จะตอบแทนย่าได้หมดหรือเปล่า แต่สิ่งหนึ่งที่เราจะทำได้เสมอคือ รักย่าให้มากที่สุด… และรักย่าตลอดไป
+        </div>
+    </div>
+
+    <div id="page2" class="page px-4 w-full">
+        <h2 class="text-2xl md:text-4xl font-bold text-blue-800 absolute top-10 text-center w-full z-20 drop-shadow-md px-4">
+            แตะที่เค้กเพื่อดูความทรงจำของเราสิคะ! 🎂
+        </h2>
+
+        <!-- พื้นที่แสดงรูปภาพ -->
+        <div class="photo-gallery" id="gallery">
+            <!-- รูปภาพจะถูกเพิ่มด้วย JavaScript -->
+        </div>
+
+        <!-- เค้กช็อกโกแลต (SVG) -->
+        <div class="cake-container w-48 h-48 md:w-64 md:h-64 mb-10" id="cake" onclick="showNextPhoto()">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- จาน -->
+                <ellipse cx="100" cy="170" rx="90" ry="25" fill="#e2e8f0" />
+                <ellipse cx="100" cy="168" rx="85" ry="22" fill="#f8fafc" />
+                
+                <!-- ฐานเค้ก (ช็อกโกแลต) -->
+                <path d="M 25 150 Q 100 180 175 150 L 175 100 Q 100 130 25 100 Z" fill="#3f2314" />
+                <ellipse cx="100" cy="100" rx="75" ry="25" fill="#5c3317" />
+                
+                <!-- ชั้นเค้ก -->
+                <path d="M 35 100 Q 100 125 165 100 L 165 70 Q 100 95 35 70 Z" fill="#4a2912" />
+                <ellipse cx="100" cy="70" rx="65" ry="20" fill="#5c3317" />
+                
+                <!-- ครีมช็อกโกแลตเยิ้มๆ -->
+                <path d="M 35 70 Q 50 85 60 70 Q 75 90 85 70 Q 100 95 115 70 Q 130 85 140 70 Q 155 85 165 70 L 165 65 Q 100 90 35 65 Z" fill="#2d170b" />
+                
+                <!-- เชอร์รี่ -->
+                <circle cx="100" cy="50" r="12" fill="#dc2626" />
+                <path d="M 100 40 Q 110 20 120 30" fill="none" stroke="#166534" stroke-width="2" />
+                
+                <!-- เทียน -->
+                <rect x="70" y="30" width="8" height="35" fill="#fef08a" rx="2"/>
+                <rect x="70" y="35" width="8" height="5" fill="#f87171" />
+                <rect x="70" y="45" width="8" height="5" fill="#f87171" />
+                <rect x="70" y="55" width="8" height="5" fill="#f87171" />
+                <!-- เปลวไฟเทียนซ้าย -->
+                <path d="M 74 15 Q 70 25 74 30 Q 78 25 74 15 Z" fill="#fbbf24" class="animate-pulse" />
+                
+                <rect x="122" y="30" width="8" height="35" fill="#fef08a" rx="2"/>
+                <rect x="122" y="35" width="8" height="5" fill="#f87171" />
+                <rect x="122" y="45" width="8" height="5" fill="#f87171" />
+                <rect x="122" y="55" width="8" height="5" fill="#f87171" />
+                <!-- เปลวไฟเทียนขวา -->
+                <path d="M 126 15 Q 122 25 126 30 Q 130 25 126 15 Z" fill="#fbbf24" class="animate-pulse" />
+
+                <!-- ดาวตกแต่ง -->
+                <polygon points="60,95 63,103 72,103 65,108 67,116 60,111 53,116 55,108 48,103 57,103" fill="#fde047" transform="scale(0.5) translate(40, 70)" />
+                <polygon points="60,95 63,103 72,103 65,108 67,116 60,111 53,116 55,108 48,103 57,103" fill="#fde047" transform="scale(0.5) translate(180, 50)" />
+                <polygon points="60,95 63,103 72,103 65,108 67,116 60,111 53,116 55,108 48,103 57,103" fill="#fde047" transform="scale(0.7) translate(120, 150)" />
+            </svg>
+        </div>
+        <p class="text-blue-700 animate-pulse font-semibold mb-4 bg-white/70 px-4 py-2 rounded-full shadow-sm z-20 relative">กดที่เค้กเลย!</p>
+    </div>
+
+    <script>
+        // ข้อมูลรูปภาพ
+        const imageUrls = [
+            "https://i.postimg.cc/wT8xFjwC/768357983-1731744298074721-7941152013207032057-n.jpg",
+            "https://i.postimg.cc/vHF8XZPR/768662484-1962647421806666-7857825234170324496-n.jpg",
+            "https://i.postimg.cc/KvScQ80d/768940859-2124997221418983-4699787688809582165-n.jpg",
+            "https://i.postimg.cc/dtPQnVWK/771843567-27624053143944070-559312191514722424-n.jpg",
+            "https://i.postimg.cc/sDdfKgnr/772534653-1036042919192186-3199156823364823357-n.jpg",
+            "https://i.postimg.cc/dtPQnVWv/772647197-1348225097014134-1948192539241789324-n.jpg",
+            "https://i.postimg.cc/yY46n8fK/772839633-1393150012957397-2420713159798778703-n.jpg",
+            "https://i.postimg.cc/J4V7Kzpg/772926791-4300499643544288-6360869823246297649-n.jpg",
+            "https://i.postimg.cc/3J5r9xtz/773995303-1026076900411577-5484964097572132288-n.jpg"
+        ];
+
+        let currentPhotoIndex = 0;
+        let isLetterOpen = false;
+        let isTyping = false;
+
+        // ฟังก์ชันพิมพ์ดีด (Typing Effect)
+        function typeWriter(elementId, text, speed = 40) {
+            return new Promise(resolve => {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    console.error("Element not found:", elementId);
+                    resolve();
+                    return;
+                }
+                
+                element.innerHTML = '<span class="typing-text"></span><span class="cursor" id="cursor-' + elementId + '">&nbsp;</span>';
+                const textSpan = element.querySelector('.typing-text');
+                const cursor = document.getElementById('cursor-' + elementId);
+                
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        textSpan.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        if(cursor) cursor.style.display = 'none';
+                        resolve();
+                    }
+                }
+                
+                // ตรวจสอบว่ามีเนื้อหาให้พิมพ์หรือไม่
+                if(text && text.trim().length > 0) {
+                     type();
+                } else {
+                     resolve();
+                }
+            });
+        }
+
+        // เริ่มแสดงข้อความทีละส่วน
+        async function startTypingSequence() {
+            if (isTyping) return;
+            isTyping = true;
+            
+            // อ่านข้อความจาก HTML ที่ซ่อนไว้
+            const raw = document.getElementById('raw-text');
+            const title = raw.querySelector('.title').innerText;
+            const p1 = raw.querySelector('.p1').innerText;
+            const qEn = raw.querySelector('.q-en').innerText;
+            const qTh = raw.querySelector('.q-th').innerText;
+
+            try {
+                // พิมพ์ส่วนหัว (ปรับความเร็วให้ช้าลง)
+                await typeWriter('type-title', title, 100);
+                
+                // พิมพ์เนื้อหา (ปรับความเร็วให้ช้าลง)
+                await typeWriter('type-p1', p1, 70);
+                
+                // แสดงเส้นคั่น
+                const hrContainer = document.getElementById('type-hr-container');
+                hrContainer.innerHTML = '<hr class="custom-hr" style="opacity:0; transition: opacity 1s;">';
+                setTimeout(() => { 
+                    const hr = hrContainer.querySelector('hr');
+                    if(hr) hr.style.opacity = '1'; 
+                }, 100);
+                await new Promise(r => setTimeout(r, 400));
+                
+                // พิมพ์โควท (ปรับความเร็วให้ช้าลง)
+                await typeWriter('type-q-en', qEn, 80);
+                await typeWriter('type-q-th', qTh, 80);
+                
+                // แสดงปุ่ม
+                setTimeout(() => {
+                    const btn = document.getElementById('btn-next');
+                    if(btn) btn.classList.add('show');
+                }, 500);
+            } catch (error) {
+                console.error("Error during typing sequence:", error);
+                // Fallback: หากพิมพ์พัง ให้แสดงปุ่มเลย
+                const btn = document.getElementById('btn-next');
+                if(btn) btn.classList.add('show');
+            } finally {
+                isTyping = false;
+            }
+        }
+
+        // ฟังก์ชันเปิดจดหมาย
+        function openLetter() {
+            if (isLetterOpen) return;
+            
+            // เล่นเพลงเมื่อกดเปิดซองจดหมาย
+            const music = document.getElementById('bg-music');
+            if(music.paused) {
+                music.play().catch(error => {
+                    console.log("Audio play failed:", error);
+                });
+            }
+            
+            const envelopeWrapper = document.getElementById('envelope-wrapper');
+            const letter = document.getElementById('letter');
+            const hint = document.getElementById('click-hint');
+            const seal = document.getElementById('heart-seal');
+            
+            // เปลี่ยนสถานะซองให้เปิด
+            envelopeWrapper.classList.add('opened');
+            seal.style.display = 'none';
+            hint.style.display = 'none';
+            
+            // รอให้ซองเปิดและกระดาษเลื่อนขึ้นเสร็จ แล้วค่อยโชว์เนื้อหาหลัก
+            setTimeout(() => {
+                envelopeWrapper.style.display = 'none';
+                
+                // แสดงกล่องจดหมาย
+                letter.style.display = 'block';
+                
+                // ใช้ Timeout สั้นๆ เพื่อให้ browser อ่านค่า display:block ก่อนที่จะใส่ opacity
+                setTimeout(() => {
+                    letter.classList.add('show');
+                }, 50);
+                
+                // เริ่มแอนิเมชันพิมพ์ข้อความ
+                setTimeout(startTypingSequence, 600);
+                
+            }, 800);
+            
+            isLetterOpen = true;
+            createBubbles(15);
+        }
+
+        // ฟังก์ชันช่วยสลับหน้าเพื่อป้องกันการซ้อนทับ
+        function switchPage(fromPageId, toPageId, callback) {
+            const fromPage = document.getElementById(fromPageId);
+            const toPage = document.getElementById(toPageId);
+            
+            // Fade out หน้าเดิม
+            fromPage.classList.remove('active-opacity');
+            
+            setTimeout(() => {
+                // ซ่อนหน้าเดิมออกจาก DOM อย่างสมบูรณ์
+                fromPage.classList.remove('active-display');
+                
+                // นำหน้าใหม่เข้า DOM
+                toPage.classList.add('active-display');
+                
+                // ให้เวลา browser เรนเดอร์เล็กน้อยก่อน Fade in
+                setTimeout(() => {
+                    toPage.classList.add('active-opacity');
+                    if (callback) callback();
+                }, 50);
+                
+            }, 800); // 800ms ต้องตรงกับเวลา transition: opacity ใน CSS
+        }
+
+        // ฟังก์ชันเปลี่ยนไปหน้าคั่น (Transition Page)
+        async function goToPage2() {
+            // ปิดปุ่มกันกดซ้ำ
+            document.getElementById('btn-next').style.pointerEvents = 'none';
+
+            switchPage('page1', 'transition-page', async () => {
+                // เตรียมข้อความ
+                const transitionRaw = document.getElementById('transition-raw-text');
+                const transitionText = transitionRaw ? transitionRaw.innerText.trim() : "";
+                
+                // เริ่มพิมพ์ข้อความหน้าคั่น (ปรับความเร็วให้ช้าลง)
+                await typeWriter('transition-type-text', transitionText, 90);
+                
+                // รอ 5 วินาที
+                setTimeout(() => {
+                    switchPage('transition-page', 'page2', () => {
+                        createBubbles(15);
+                    });
+                }, 5000); 
+            });
+        }
+
+        // ฟังก์ชันสร้างฟองสบู่
+        function createBubbles(count = 10) {
+            const container = document.getElementById('bubble-container');
+            
+            for (let i = 0; i < count; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // สุ่มขนาด
+                const size = Math.random() * 40 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                // สุ่มตำแหน่ง X
+                bubble.style.left = `${Math.random() * 100}vw`;
+                
+                // สุ่มความเร็วและดีเลย์
+                const duration = Math.random() * 5 + 5;
+                bubble.style.animationDuration = `${duration}s`;
+                bubble.style.animationDelay = `${Math.random() * 2}s`;
+                
+                container.appendChild(bubble);
+                
+                // ลบฟองสบู่เมื่อแอนิเมชันจบ
+                setTimeout(() => {
+                    bubble.remove();
+                }, duration * 1000);
+            }
+        }
+
+        // สร้างฟองสบู่เรื่อยๆ เป็นแบคกราวด์
+        setInterval(() => createBubbles(2), 2000);
+        // สร้างตอนเริ่มต้นนิดหน่อย
+        createBubbles(10);
+
+        // ฟังก์ชันโชว์รูปภาพเมื่อกดเค้ก
+        function showNextPhoto() {
+            const cake = document.getElementById('cake');
+            const gallery = document.getElementById('gallery');
+            
+            // เพิ่มแอนิเมชันขยับเค้ก
+            cake.classList.remove('cake-shake');
+            void cake.offsetWidth; // trigger reflow
+            cake.classList.add('cake-shake');
+            
+            // สร้างฟองสบู่เมื่อกด
+            createBubbles(5);
+
+            // เช็คว่าดูรูปครบยัง
+            if (currentPhotoIndex >= imageUrls.length) {
+                // ถ้าครบแล้ว จะวนกลับมาใหม่หรือแจ้งเตือนดี?
+                // ในที่นี้จะลบรูปเก่าออกให้หมดแล้วเริ่มใหม่
+                const allPhotos = document.querySelectorAll('.polaroid');
+                allPhotos.forEach(p => {
+                    p.style.opacity = '0';
+                    setTimeout(() => p.remove(), 600);
+                });
+                currentPhotoIndex = 0;
+                
+                // แนะนำให้ผู้ใช้กดต่อได้
+                setTimeout(() => showNextPhoto(), 600);
+                return;
+            }
+
+            // สร้างกรอบรูป Polaroid
+            const polaroid = document.createElement('div');
+            polaroid.classList.add('polaroid');
+            
+            const img = document.createElement('img');
+            img.src = imageUrls[currentPhotoIndex];
+            img.alt = `ความทรงจำที่ ${currentPhotoIndex + 1}`;
+            
+            // จัดการกรณีโหลดรูปไม่ได้
+            img.onerror = function() {
+                this.src = `https://placehold.co/400x400/e0f2fe/1e3a8a?text=Happy+Birthday!`;
+            };
+
+            polaroid.appendChild(img);
+            
+            // สุ่มตำแหน่ง หมุน และสเกลเล็กน้อยให้ดูเป็นธรรมชาติ
+            const rotation = (Math.random() - 0.5) * 30; // -15 ถึง 15 องศา
+            const offsetX = (Math.random() - 0.5) * 40; // ขยับซ้ายขวานิดหน่อย
+            const offsetY = (Math.random() - 0.5) * 40; // ขยับขึ้นลงนิดหน่อย
+            
+            // ตั้งค่า Transform ปลายทาง (เมื่อแสดงผลแล้ว)
+            // เก็บไว้ในตัวแปร css custom property หรือ data attribute เพื่อใช้กับ transition
+            
+            gallery.appendChild(polaroid);
+
+            // บังคับวาดใหม่แล้วใส่ class show เพื่อทริกเกอร์ transition
+            setTimeout(() => {
+                // คำนวณ z-index เพื่อให้รูปล่าสุดอยู่บนสุด
+                polaroid.style.zIndex = 100 + currentPhotoIndex;
+                
+                // เปลี่ยน transform ไปยังตำแหน่งที่สุ่มไว้ พร้อมกับขนาดปกติ
+                polaroid.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg) scale(1)`;
+                polaroid.classList.add('show');
+            }, 50);
+
+            currentPhotoIndex++;
+        }
+    </script>
+</body>
+</html>
