@@ -676,11 +676,11 @@
             const qTh = raw.querySelector('.q-th').innerText;
 
             try {
-                // พิมพ์ส่วนหัว (ปรับความเร็วให้ช้าลง)
-                await typeWriter('type-title', title, 100);
+                // พิมพ์ส่วนหัว (ปรับความเร็วให้ช้าลงมากเพื่อให้คุณย่าอ่านทัน)
+                await typeWriter('type-title', title, 150);
                 
-                // พิมพ์เนื้อหา (ปรับความเร็วให้ช้าลง)
-                await typeWriter('type-p1', p1, 70);
+                // พิมพ์เนื้อหา (ปรับความเร็วให้ช้าลงมาก)
+                await typeWriter('type-p1', p1, 120);
                 
                 // แสดงเส้นคั่น
                 const hrContainer = document.getElementById('type-hr-container');
@@ -689,17 +689,17 @@
                     const hr = hrContainer.querySelector('hr');
                     if(hr) hr.style.opacity = '1'; 
                 }, 100);
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 1000)); // รอ 1 วินาทีก่อนพิมพ์ประโยคต่อไป
                 
                 // พิมพ์โควท (ปรับความเร็วให้ช้าลง)
-                await typeWriter('type-q-en', qEn, 80);
-                await typeWriter('type-q-th', qTh, 80);
+                await typeWriter('type-q-en', qEn, 120);
+                await typeWriter('type-q-th', qTh, 120);
                 
                 // แสดงปุ่ม
                 setTimeout(() => {
                     const btn = document.getElementById('btn-next');
                     if(btn) btn.classList.add('show');
-                }, 500);
+                }, 1000);
             } catch (error) {
                 console.error("Error during typing sequence:", error);
                 // Fallback: หากพิมพ์พัง ให้แสดงปุ่มเลย
@@ -787,15 +787,15 @@
                 const transitionRaw = document.getElementById('transition-raw-text');
                 const transitionText = transitionRaw ? transitionRaw.innerText.trim() : "";
                 
-                // เริ่มพิมพ์ข้อความหน้าคั่น (ปรับความเร็วให้ช้าลง)
-                await typeWriter('transition-type-text', transitionText, 90);
+                // เริ่มพิมพ์ข้อความหน้าคั่น (ปรับความเร็วให้ช้าลงมากเพื่อให้คุณย่าอ่านทัน)
+                await typeWriter('transition-type-text', transitionText, 120);
                 
-                // รอ 5 วินาที
+                // รอ 8 วินาที (เพิ่มเวลาให้คุณย่าอ่านข้อความจบก่อนหน้าจะเปลี่ยนไปที่เค้ก)
                 setTimeout(() => {
                     switchPage('transition-page', 'page2', () => {
                         createBubbles(15);
                     });
-                }, 5000); 
+                }, 8000); 
             });
         }
 
